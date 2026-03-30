@@ -72,6 +72,8 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
+    products: Product;
+    variations: Variation;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -94,6 +96,8 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    variations: VariationsSelect<false> | VariationsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -201,7 +205,30 @@ export interface Page {
       | null;
     media?: (string | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | {
+        autoplay?: boolean | null;
+        delay?: number | null;
+        slides?:
+          | {
+              image: string | Media;
+              title?: string | null;
+              description?: string | null;
+              buttonText?: string | null;
+              buttonLink?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'carousel';
+      }
+  )[];
   meta?: {
     title?: string | null;
     /**
@@ -396,6 +423,27 @@ export interface FolderInterface {
 export interface Category {
   id: string;
   title: string;
+  'Headline Text'?: string | null;
+  images?:
+    | {
+        image?: (string | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  link?: {
+    type?: ('internal' | 'external') | null;
+    internal?:
+      | ({
+          relationTo: 'pages';
+          value: string | Page;
+        } | null)
+      | ({
+          relationTo: 'products';
+          value: string | Product;
+        } | null);
+    external?: string | null;
+    label?: string | null;
+  };
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -410,6 +458,84 @@ export interface Category {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: string;
+  title: string;
+  slug: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  'Product Type'?: ('variable' | 'simple') | null;
+  price?: number | null;
+  salePrice?: number | null;
+  category?: (string | Category)[] | null;
+  Rating?: boolean | null;
+  Weight?: number | null;
+  images?:
+    | {
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
+  variations?: (string | Variation)[] | null;
+  stock?: number | null;
+  inStock?: boolean | null;
+  sku?: string | null;
+  customFields?:
+    | {
+        key: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  seo?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    image?: (string | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variations".
+ */
+export interface Variation {
+  id: string;
+  product: string | Product;
+  sku: string;
+  price: number;
+  salePrice?: number | null;
+  stock?: number | null;
+  inStock?: boolean | null;
+  attributes?:
+    | {
+        name: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  image?: (string | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -495,21 +621,50 @@ export interface ContentBlock {
   columns?:
     | {
         size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
-        richText?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
+        content?:
+          | (
+              | {
+                  richText?: {
+                    root: {
+                      type: string;
+                      children: {
+                        type: any;
+                        version: number;
+                        [k: string]: unknown;
+                      }[];
+                      direction: ('ltr' | 'rtl') | null;
+                      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                      indent: number;
+                      version: number;
+                    };
+                    [k: string]: unknown;
+                  } | null;
+                  id?: string | null;
+                  blockName?: string | null;
+                  blockType: 'text';
+                }
+              | MediaBlock
+              | {
+                  autoplay?: boolean | null;
+                  delay?: number | null;
+                  slides?:
+                    | {
+                        image: string | Media;
+                        title?: string | null;
+                        description?: string | null;
+                        buttonText?: string | null;
+                        buttonLink?: string | null;
+                        id?: string | null;
+                      }[]
+                    | null;
+                  id?: string | null;
+                  blockName?: string | null;
+                  blockType: 'carousel';
+                }
+              | CallToActionBlock
+              | FormBlock
+            )[]
+          | null;
         enableLink?: boolean | null;
         link?: {
           type?: ('reference' | 'custom') | null;
@@ -549,43 +704,10 @@ export interface MediaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ArchiveBlock".
- */
-export interface ArchiveBlock {
-  introContent?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  populateBy?: ('collection' | 'selection') | null;
-  relationTo?: 'posts' | null;
-  categories?: (string | Category)[] | null;
-  limit?: number | null;
-  selectedDocs?:
-    | {
-        relationTo: 'posts';
-        value: string | Post;
-      }[]
-    | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'archive';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "FormBlock".
  */
 export interface FormBlock {
+  class?: string | null;
   form: string | Form;
   enableIntro?: boolean | null;
   introContent?: {
@@ -721,6 +843,16 @@ export interface Form {
             blockName?: string | null;
             blockType: 'textarea';
           }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'password';
+          }
       )[]
     | null;
   submitButtonLabel?: string | null;
@@ -780,6 +912,40 @@ export interface Form {
     | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ArchiveBlock".
+ */
+export interface ArchiveBlock {
+  introContent?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  class?: string | null;
+  populateBy?: ('collection' | 'selection') | null;
+  relationTo?: ('posts' | 'products' | 'categories') | null;
+  limit?: number | null;
+  selectedDocs?:
+    | {
+        relationTo: 'posts';
+        value: string | Post;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'archive';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -992,6 +1158,14 @@ export interface PayloadLockedDocument {
         value: string | User;
       } | null)
     | ({
+        relationTo: 'products';
+        value: string | Product;
+      } | null)
+    | ({
+        relationTo: 'variations';
+        value: string | Variation;
+      } | null)
+    | ({
         relationTo: 'redirects';
         value: string | Redirect;
       } | null)
@@ -1089,6 +1263,24 @@ export interface PagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        carousel?:
+          | T
+          | {
+              autoplay?: T;
+              delay?: T;
+              slides?:
+                | T
+                | {
+                    image?: T;
+                    title?: T;
+                    description?: T;
+                    buttonText?: T;
+                    buttonLink?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
       };
   meta?:
     | T
@@ -1137,7 +1329,38 @@ export interface ContentBlockSelect<T extends boolean = true> {
     | T
     | {
         size?: T;
-        richText?: T;
+        content?:
+          | T
+          | {
+              text?:
+                | T
+                | {
+                    richText?: T;
+                    id?: T;
+                    blockName?: T;
+                  };
+              mediaBlock?: T | MediaBlockSelect<T>;
+              carousel?:
+                | T
+                | {
+                    autoplay?: T;
+                    delay?: T;
+                    slides?:
+                      | T
+                      | {
+                          image?: T;
+                          title?: T;
+                          description?: T;
+                          buttonText?: T;
+                          buttonLink?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                    blockName?: T;
+                  };
+              cta?: T | CallToActionBlockSelect<T>;
+              formBlock?: T | FormBlockSelect<T>;
+            };
         enableLink?: T;
         link?:
           | T
@@ -1165,26 +1388,27 @@ export interface MediaBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ArchiveBlock_select".
+ * via the `definition` "FormBlock_select".
  */
-export interface ArchiveBlockSelect<T extends boolean = true> {
+export interface FormBlockSelect<T extends boolean = true> {
+  class?: T;
+  form?: T;
+  enableIntro?: T;
   introContent?: T;
-  populateBy?: T;
-  relationTo?: T;
-  categories?: T;
-  limit?: T;
-  selectedDocs?: T;
   id?: T;
   blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FormBlock_select".
+ * via the `definition` "ArchiveBlock_select".
  */
-export interface FormBlockSelect<T extends boolean = true> {
-  form?: T;
-  enableIntro?: T;
+export interface ArchiveBlockSelect<T extends boolean = true> {
   introContent?: T;
+  class?: T;
+  populateBy?: T;
+  relationTo?: T;
+  limit?: T;
+  selectedDocs?: T;
   id?: T;
   blockName?: T;
 }
@@ -1319,6 +1543,21 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
+  'Headline Text'?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  link?:
+    | T
+    | {
+        type?: T;
+        internal?: T;
+        external?: T;
+        label?: T;
+      };
   generateSlug?: T;
   slug?: T;
   parent?: T;
@@ -1355,6 +1594,70 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  'Product Type'?: T;
+  price?: T;
+  salePrice?: T;
+  category?: T;
+  Rating?: T;
+  Weight?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  variations?: T;
+  stock?: T;
+  inStock?: T;
+  sku?: T;
+  customFields?:
+    | T
+    | {
+        key?: T;
+        value?: T;
+        id?: T;
+      };
+  seo?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variations_select".
+ */
+export interface VariationsSelect<T extends boolean = true> {
+  product?: T;
+  sku?: T;
+  price?: T;
+  salePrice?: T;
+  stock?: T;
+  inStock?: T;
+  attributes?:
+    | T
+    | {
+        name?: T;
+        value?: T;
+        id?: T;
+      };
+  image?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1471,6 +1774,17 @@ export interface FormsSelect<T extends boolean = true> {
               blockName?: T;
             };
         textarea?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        password?:
           | T
           | {
               name?: T;

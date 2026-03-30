@@ -5,13 +5,12 @@ import configPromise from '@payload-config'
 import { getPayload, type RequiredDataFromCollectionSlug } from 'payload'
 import { draftMode } from 'next/headers'
 import React, { cache } from 'react'
-import { homeStatic } from '@/endpoints/seed/home-static'
-
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
+import RenderProducts from '@/components/Shop/RenderProducts/RenderProduct'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -55,27 +54,23 @@ export default async function Page({ params: paramsPromise }: Args) {
     slug: decodedSlug,
   })
 
-  // Remove this code once your website is seeded
-  if (!page && slug === 'home') {
-    page = homeStatic
-  }
-
   if (!page) {
     return <PayloadRedirects url={url} />
   }
 
-  const { hero, layout } = page
+  const { hero, layout, title, slug: pageSlug } = page;
 
   return (
-    <article className="pt-16 pb-24">
+    <article className={`pb-24 ${pageSlug === 'home' ? 'bg-[#E3E6E6]' : 'bg-white'}`}>
       <PageClient />
       {/* Allows redirects for valid pages too */}
       <PayloadRedirects disableNotFound url={url} />
-
       {draft && <LivePreviewListener />}
-
-      <RenderHero {...hero} />
-      <RenderBlocks blocks={layout} />
+      {hero && (
+        <RenderHero {...hero} />
+      )}
+      <RenderBlocks blocks={layout} title={title} />
+      {pageSlug === 'shop' && <RenderProducts />}
     </article>
   )
 }

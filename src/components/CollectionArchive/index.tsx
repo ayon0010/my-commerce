@@ -1,31 +1,21 @@
 import { cn } from '@/utilities/ui'
 import React from 'react'
 
-import { Card, CardPostData } from '@/components/Card'
+import { Category, Product, Post, Media } from '@/payload-types'
+import { ProductCategoryCard } from '../Card/ProductCategoryCard'
 
-export type Props = {
-  posts: CardPostData[]
-}
-
-export const CollectionArchive: React.FC<Props> = (props) => {
-  const { posts } = props
+export const CollectionArchive = ({ posts }: { posts: Category[] }) => {
 
   return (
     <div className={cn('container')}>
-      <div>
-        <div className="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-12 gap-y-4 gap-x-4 lg:gap-y-8 lg:gap-x-8 xl:gap-x-8">
-          {posts?.map((result, index) => {
-            if (typeof result === 'object' && result !== null) {
-              return (
-                <div className="col-span-4" key={index}>
-                  <Card className="h-full" doc={result} relationTo="posts" showCategories />
-                </div>
-              )
-            }
-
-            return null
-          })}
-        </div>
+      <div className='w-full h-full grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-5'>
+        {
+          posts?.map((post, i) => {
+            return (
+              <ProductCategoryCard key={i} post={post} />
+            )
+          })
+        }
       </div>
     </div>
   )

@@ -1,11 +1,15 @@
 "use client"
-import { HeartIcon, MapPin, Menu, SearchIcon, ShoppingCartIcon, User, UserIcon } from 'lucide-react'
+import { ChevronRightIcon, HeartIcon, MapPin, Menu, SearchIcon, ShoppingCartIcon, User, UserIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useRef, useState } from 'react'
+import type { Category, Header as HeaderType } from '@/payload-types'
 import { Input } from '../ui/input'
 import PopUp from '../PopUp/PopUp'
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { CMSLink } from '../Link'
+import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
+import { useCart } from '@/app/(frontend)/Hooks/useCart'
 gsap.registerPlugin(useGSAP);
 
 
@@ -56,11 +60,17 @@ export const Logo = () => {
 }
 
 
-const Navbar = () => {
+const Navbar = ({ data, categories }: { data: HeaderType, categories: Category[] }) => {
 
-    const [isOpen, setIsOpen] = useState<boolean>(false)
-    const [isClosing, setIsClosing] = useState<boolean>(false)
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [isClosing, setIsClosing] = useState<boolean>(false);
     const popupRef = useRef<HTMLDivElement>(null);
+    const sideCartRef = useRef<HTMLDivElement>(null);
+    const { sideCartOpen: isSideCartOpen, setSideCartOpen: setIsSideCartOpen } = useCart();
+    const [isSideCartClosing, setIsSideCartClosing] = useState<boolean>(false);
+
+    // nav data
+    const navItems = data?.navItems || [];
 
     useGSAP(() => {
         if (!popupRef.current) return;
@@ -72,6 +82,16 @@ const Navbar = () => {
         }
     }, { dependencies: [isOpen, isClosing], revertOnUpdate: true })
 
+    useGSAP(() => {
+        if (!sideCartRef.current) return;
+        if (isSideCartOpen && !isSideCartClosing) {
+            gsap.fromTo(sideCartRef.current,
+                { x: '100%' },
+                { x: '0%', duration: 0.4, ease: 'power2.out' }
+            );
+        }
+    }, { dependencies: [isSideCartOpen, isSideCartClosing], revertOnUpdate: true })
+
     const closePopup = () => {
         if (!popupRef.current || isClosing) return;
         setIsClosing(true);
@@ -82,6 +102,20 @@ const Navbar = () => {
             onComplete: () => {
                 setIsOpen(false)
                 setIsClosing(false)
+            },
+        })
+    }
+
+    const closeSideCart = () => {
+        if (!sideCartRef.current || isSideCartClosing) return;
+        setIsSideCartClosing(true);
+        gsap.to(sideCartRef.current, {
+            x: '100%',
+            duration: 0.35,
+            ease: 'power2.in',
+            onComplete: () => {
+                setIsSideCartOpen(false);
+                setIsSideCartClosing(false);
             },
         })
     }
@@ -104,6 +138,8 @@ const Navbar = () => {
                     <Input id='search' placeholder='Search' type='text' className='w-full py-6' aria-label='Search' />
                     <SearchIcon className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-500' />
                 </div>
+                {/* theme */}
+                <ThemeSelector />
                 {/* Language */}
                 <div className='flex items-center gap-1'>
                     {/* <span className="fi fi-bd"></span> */}
@@ -123,31 +159,55 @@ const Navbar = () => {
                     <Link href={'/wishlist'} className='w-fit'>
                         <HeartIcon />
                     </Link>
-                    <Link href={'/cart'} className='w-fit'>
-                        <ShoppingCartIcon />
-                    </Link>
+                    <ShoppingCartIcon className='cursor-pointer' onClick={() => isSideCartOpen ? closeSideCart() : setIsSideCartOpen(true)} />
                 </div>
             </div>
-            <div className='bg-[#FDD700] container py-4 flex items-center gap-4'>
+            <div className='bg-[#FDD700] container py-4 flex items-center gap-6'>
                 <div className='flex items-center gap-2 cursor-pointer'>
                     <Menu onClick={() => (isOpen ? closePopup() : setIsOpen(true))} className='' />
                     <span className='text-base'>All</span>
                 </div>
-                <ul className='flex items-center gap-4'>
-                    <li>Today's Deals</li>
-                    <li>Customer Service</li>
-                    {/* <li></li> */}
-                </ul>
+                <div className='flex items-center gap-6'>
+                    {navItems.map(({ link }, i) => {
+                        return <CMSLink key={i} {...link} className='text-black text-base font-normal hover:no-underline' appearance="link" />
+                    })}
+                </div>
             </div>
         </nav>
+
+
+        {/* Nav Bar Popup */}
+
         {(isOpen || isClosing) && <PopUp onClose={closePopup}>
             <div ref={popupRef} onClick={(e) => e.stopPropagation()} className='bg-white w-[30%] h-full left-0 overflow-y-auto'>
                 <div className='px-8 py-4 bg-primary flex items-center gap-2'>
                     <User size={30} />
                     <span className='text-xl font-semibold'>Hello, <Link href='/login'>Sign in</Link></span>
                 </div>
+                <div className='p-4 flex flex-col gap-4'>
+                    <h3 className='text-xl font-semibold leading-[27px]'>Shop by Category</h3>
+                    {categories.map((category, i) => {
+                        return <div key={i} className='flex items-center gap-2'>
+                            <h3 className='text-sm leading-[23px] font-semibold justify-between w-full'>{category.title}</h3>
+                            <ChevronRightIcon className='w-4 h-4' />
+                        </div>
+                    })}
+                </div>
             </div>
         </PopUp>}
+
+        {/* SideCart */}
+        {
+            (isSideCartOpen || isSideCartClosing) && <PopUp onClose={closeSideCart}>
+                <div ref={sideCartRef} onClick={(e) => e.stopPropagation()} className='bg-white w-[30%] h-full absolute right-0 top-0 bottom-0 overflow-y-auto'>
+                    <div className='px-8 py-4 bg-primary flex items-center gap-2'>
+                        <ShoppingCartIcon size={30} />
+                        <span className='text-xl font-semibold'>Cart</span>
+                    </div>
+                </div>
+            </PopUp>
+        }
+
     </>
 }
 

@@ -5,11 +5,11 @@
 @config '../../../tailwind.config.mjs';
 
 @custom-variant dark (&:is([data-theme='dark'] *));
-@custom-variant sm (@media (width >= theme(--breakpoint-sm)));
-@custom-variant md (@media (width >= theme(--breakpoint-md)));
-@custom-variant lg (@media (width >= theme(--breakpoint-lg)));
-@custom-variant xl (@media (width >= theme(--breakpoint-xl)));
-@custom-variant 2xl (@media (width >= theme(--breakpoint-2xl)));
+@custom-variant sm (@media (width >=theme(--breakpoint-sm)));
+@custom-variant md (@media (width >=theme(--breakpoint-md)));
+@custom-variant lg (@media (width >=theme(--breakpoint-lg)));
+@custom-variant xl (@media (width >=theme(--breakpoint-xl)));
+@custom-variant 2xl (@media (width >=theme(--breakpoint-2xl)));
 
 @layer base {
   h1,
@@ -211,6 +211,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground min-h-[100vh] flex flex-col;
   }
@@ -228,4 +229,40 @@ html[data-theme='light'] {
 
 .container {
   @apply max-w-[1920px] mx-auto px-4 md:px-6 lg:px-8;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+  @apply text-black! w-[20px]!
+}
+
+.swiper-button-prev {
+  @apply left-6! top-[30%]!
+}
+
+.swiper-button-next {
+  @apply right-6! top-[30%]!
+}
+
+
+/* Product Category Block in the carousel */
+.hero-category-product {
+  @apply -mt-60! z-10 relative;
+}
+
+@keyframes shine-sweep {
+  0% { 
+    left: -100%; 
+  }
+  /* The shine finishes its move by 15% of the total time */
+  15% { 
+    left: 100%; 
+  }
+  /* It stays at 100% (hidden) for the remaining 85% of the time */
+  100% { 
+    left: 100%; 
+  }
+}
+.animate-shine-sweep {
+  animation: shine-sweep 2.5s infinite linear;
 }

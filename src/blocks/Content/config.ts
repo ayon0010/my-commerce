@@ -1,13 +1,11 @@
 import type { Block, Field } from 'payload'
 
-import {
-  FixedToolbarFeature,
-  HeadingFeature,
-  InlineToolbarFeature,
-  lexicalEditor,
-} from '@payloadcms/richtext-lexical'
-
+import { Carousel } from '@/blocks/Carousel/Carousel'
+import { MediaBlock } from '@/blocks/MediaBlock/config'
+import { CallToAction } from '@/blocks/CallToAction/config'
 import { link } from '@/fields/link'
+import { FormBlock } from '@/blocks/Form/config'
+
 
 const columnFields: Field[] = [
   {
@@ -15,49 +13,44 @@ const columnFields: Field[] = [
     type: 'select',
     defaultValue: 'oneThird',
     options: [
-      {
-        label: 'One Third',
-        value: 'oneThird',
-      },
-      {
-        label: 'Half',
-        value: 'half',
-      },
-      {
-        label: 'Two Thirds',
-        value: 'twoThirds',
-      },
-      {
-        label: 'Full',
-        value: 'full',
-      },
+      { label: 'One Third', value: 'oneThird' },
+      { label: 'Half', value: 'half' },
+      { label: 'Two Thirds', value: 'twoThirds' },
+      { label: 'Full', value: 'full' },
     ],
   },
+
+  // 🔥 REPLACE richText WITH BLOCKS
   {
-    name: 'richText',
-    type: 'richText',
-    editor: lexicalEditor({
-      features: ({ rootFeatures }) => {
-        return [
-          ...rootFeatures,
-          HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
-          FixedToolbarFeature(),
-          InlineToolbarFeature(),
-        ]
+    name: 'content',
+    type: 'blocks',
+    blocks: [
+      {
+        slug: 'text',
+        fields: [
+          {
+            name: 'richText',
+            type: 'richText',
+          },
+        ],
       },
-    }),
-    label: false,
+
+      MediaBlock,
+      Carousel,
+      CallToAction,
+      FormBlock
+    ],
   },
+
   {
     name: 'enableLink',
     type: 'checkbox',
   },
+
   link({
     overrides: {
       admin: {
-        condition: (_data, siblingData) => {
-          return Boolean(siblingData?.enableLink)
-        },
+        condition: (_data, siblingData) => Boolean(siblingData?.enableLink),
       },
     },
   }),

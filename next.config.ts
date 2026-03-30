@@ -32,6 +32,7 @@ const nextConfig: NextConfig = {
         }
       }),
     ],
+    domains: ['fakestoreapi.com'],
   },
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {

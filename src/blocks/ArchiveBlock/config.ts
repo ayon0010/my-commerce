@@ -27,6 +27,11 @@ export const Archive: Block = {
       label: 'Intro Content',
     },
     {
+      name: "class",
+      type: 'text',
+      label: 'Class (css)',
+    },
+    {
       name: 'populateBy',
       type: 'select',
       defaultValue: 'collection',
@@ -54,18 +59,26 @@ export const Archive: Block = {
           label: 'Posts',
           value: 'posts',
         },
+        {
+          label: 'Products',
+          value: 'products',
+        },
+        {
+          label: 'Categories',
+          value: 'categories',
+        }
       ],
     },
-    {
-      name: 'categories',
-      type: 'relationship',
-      admin: {
-        condition: (_, siblingData) => siblingData.populateBy === 'collection',
-      },
-      hasMany: true,
-      label: 'Categories To Show',
-      relationTo: 'categories',
-    },
+    // {
+    //   name: 'categories',
+    //   type: 'relationship',
+    //   admin: {
+    //     condition: (_, siblingData) => siblingData.populateBy === 'collection',
+    //   },
+    //   hasMany: true,
+    //   label: 'Categories To Show',
+    //   relationTo: 'categories',
+    // },
     {
       name: 'limit',
       type: 'number',

@@ -1,4 +1,4 @@
-import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
+import { fields as formBuilderFieldBlocks, formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { seoPlugin } from '@payloadcms/plugin-seo'
@@ -57,6 +57,14 @@ export const plugins: Plugin[] = [
   formBuilderPlugin({
     fields: {
       payment: false,
+      password: {
+        ...formBuilderFieldBlocks.text,
+        slug: 'password',
+        labels: {
+          plural: 'password',
+          singular: 'password',
+        },
+      } as any,
     },
     formOverrides: {
       fields: ({ defaultFields }) => {

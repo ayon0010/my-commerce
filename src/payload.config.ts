@@ -14,6 +14,8 @@ import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
+import { Products } from './collections/Products/Product'
+import { Variations } from './collections/ProductVariation/Variation'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -60,7 +62,7 @@ export default buildConfig({
   db: mongooseAdapter({
     url: process.env.DATABASE_URL || '',
   }),
-  collections: [Pages, Posts, Media, Categories, Users],
+  collections: [Pages, Posts, Media, Categories, Users, Products, Variations],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   plugins,
@@ -87,4 +89,19 @@ export default buildConfig({
     },
     tasks: [],
   },
+  endpoints: [
+    {
+      path: '/cart/add',
+      method: 'post',
+      handler: async (req) => {
+        // const user = req.user
+        // if (!user) {
+        //   return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        // }
+        const body = await req.json!()
+        console.log(body, 'data');
+        return Response.json({ message: 'Cart added' })
+      }
+    }
+  ]
 })
